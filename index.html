@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ブログ開発学習プラットフォーム</title>
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body>
+    <header>
+      <h1>ブログ開発学習プラットフォーム</h1>
+      <p>環境構築をせずにブラウザだけでフロントエンドと擬似バックエンドを学ぶことができます。</p>
+    </header>
+    <main>
+      <section class="panel instructions" aria-label="学習ガイド">
+        <h2>📚 学習ガイド</h2>
+        <ul>
+          <li>
+            <strong>STEP 1: HTML/CSS</strong>
+            初期コードを編集して見た目やレイアウトを自由にカスタマイズしましょう。
+          </li>
+          <li>
+            <strong>STEP 2: JavaScript</strong>
+            ルーティングやイベント処理を書き換えて動きを理解してください。
+          </li>
+          <li>
+            <strong>STEP 3: 擬似CRUD</strong>
+            右側のコードで記事の作成・閲覧・更新・削除の流れを体験できます。
+          </li>
+          <li>
+            <strong>STEP 4: 疑似DB</strong>
+            ブラウザ内でデータを保持している仕組みに注目し、バックエンド設計の疑似体験を得ましょう。
+          </li>
+        </ul>
+        <p style="font-size: 12px; color: #6b7280;">
+          ▶ ブラウザを閉じても変更内容が残るようにローカル保存を有効にしています。サンプルを試し直したい場合は「初期コードに戻す」を押してください。
+        </p>
+      </section>
+      <section class="workspace">
+        <article class="pane preview-pane">
+          <div class="pane-header">
+            <div class="title"><span></span>リアルタイムプレビュー</div>
+            <div class="preview-info">右側のコードを編集するとここに反映されます</div>
+          </div>
+          <div class="preview-wrapper">
+            <iframe id="preview" title="コードプレビュー"></iframe>
+          </div>
+        </article>
+        <article class="pane editor-pane">
+          <div class="pane-header">
+            <div class="title"><span></span>コードエディター</div>
+            <div class="toolbar">
+              <button id="save-button" type="button">変更を保存</button>
+              <button id="reset-button" class="secondary" type="button">初期コードに戻す</button>
+              <button id="download-button" class="secondary" type="button">コードをダウンロード</button>
+            </div>
+          </div>
+          <div class="editor-wrapper">
+            <nav class="editor-tabs" role="tablist" aria-label="コード種別">
+              <button class="editor-tab active" data-tab="html" type="button" role="tab" aria-selected="true">HTML</button>
+              <button class="editor-tab" data-tab="css" type="button" role="tab" aria-selected="false">CSS</button>
+              <button class="editor-tab" data-tab="js" type="button" role="tab" aria-selected="false">JavaScript</button>
+            </nav>
+            <textarea id="html-editor" class="active" spellcheck="false" aria-label="HTMLエディター"></textarea>
+            <textarea id="css-editor" spellcheck="false" aria-label="CSSエディター"></textarea>
+            <textarea id="js-editor" spellcheck="false" aria-label="JavaScriptエディター"></textarea>
+          </div>
+        </article>
+      </section>
+    </main>
+    <footer>© 2025 Blog Dev Playground</footer>
+    <script src="scripts/app.js" defer></script>
+  </body>
+</html>
