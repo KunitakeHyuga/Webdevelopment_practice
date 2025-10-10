@@ -1,7 +1,8 @@
-const STORAGE_KEY = "blog-dev-playground-files";
+const STORAGE_KEY = 'blog-dev-playground-files';
+const PREVIEW_DATA_KEY = 'playground-posts';
 
-const defaultFiles = {
-  html: `<div id="app">
+const defaultHtml = String.raw`<!-- ルーティングで画面が切り替わる土台なので、構造が分かりやすいようシンプルに保っています -->
+<div id="app">
   <header class="header">
     <div class="container">
       <h1 class="logo">My Blog</h1>
@@ -14,7 +15,7 @@ const defaultFiles = {
   </header>
 
   <main class="main container" id="content">
-    <!-- ここにコンテンツが表示されます -->
+    <!-- ここが各ページの表示領域なので、レイアウトを崩したくない場合はラッパーを残しておきます -->
   </main>
 
   <footer class="footer">
@@ -22,8 +23,10 @@ const defaultFiles = {
       <p>&copy; 2025 My Blog. All rights reserved.</p>
     </div>
   </footer>
-</div>`,
-  css: `* {
+</div>`;
+
+const defaultCss = String.raw`/* 初学者が視覚的な変化を把握しやすいよう、共通余白とフォントを定義しています */
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -92,6 +95,7 @@ body {
   transition: box-shadow 0.2s;
 }
 
+/* 記事カードのホバーを強調する理由: マウス操作で動きが確認できると学習の動機付けになるため */
 .post-card:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
@@ -203,37 +207,42 @@ body {
   color: white;
   padding: 20px 0;
   text-align: center;
-}`,
-  js: `// 擬似DBをメモリとローカルストレージの二層で保持する理由: リロードしても学習状態が失われないようにするため
-let posts = JSON.parse(localStorage.getItem('playground-posts') || '[]');
+}`;
+
+const defaultJs = String.raw`// このサンプルコードはSPAとCRUDの両方を体験してもらうため、フロントエンド側でデータを完結させています
+const STORAGE_KEY_POSTS = '${PREVIEW_DATA_KEY}';
+
+const seedPosts = [
+  {
+    id: 1,
+    title: '初めてのブログ投稿',
+    content: 'これは最初のブログ記事です。HTML、CSS、JavaScriptを使って作られています。',
+    date: '2025-01-15'
+  },
+  {
+    id: 2,
+    title: 'ルーティングについて',
+    content: 'ルーティングを使うことで、異なるページを表示できます。URLのハッシュを使って実装しています。',
+    date: '2025-01-20'
+  },
+  {
+    id: 3,
+    title: 'CRUD操作とは',
+    content: 'Create（作成）、Read（読み取り）、Update（更新）、Delete（削除）の4つの基本操作のことです。',
+    date: '2025-01-25'
+  }
+];
+
+let posts = JSON.parse(localStorage.getItem(STORAGE_KEY_POSTS) || '[]');
 
 if (!posts.length) {
-  // 初期記事を投入する理由: 画面が空だと学習者が操作の結果をイメージしづらいため
-  posts = [
-    {
-      id: 1,
-      title: '初めてのブログ投稿',
-      content: 'これは最初のブログ記事です。HTML、CSS、JavaScriptを使って作られています。',
-      date: '2025-01-15'
-    },
-    {
-      id: 2,
-      title: 'ルーティングについて',
-      content: 'ルーティングを使うことで、異なるページを表示できます。URLのハッシュを使って実装しています。',
-      date: '2025-01-20'
-    },
-    {
-      id: 3,
-      title: 'CRUD操作とは',
-      content: 'Create（作成）、Read（読み取り）、Update（更新）、Delete（削除）の4つの基本操作のことです。',
-      date: '2025-01-25'
-    }
-  ];
+  // 初期データを投入する理由: 空の画面よりも完成イメージがあるほうが学習を始めやすいため
+  posts = [...seedPosts];
 }
 
 let nextId = posts.reduce((max, post) => Math.max(max, post.id), 0) + 1;
 
-// ハッシュルーターを利用する理由: 単一ページで画面遷移を疑似的に学べるようにするため
+// ハッシュルーティングを使う理由: シングルページで画面遷移の概念を再現したかったため
 function router() {
   const hash = window.location.hash || '#/'
   const content = document.getElementById('content')
@@ -284,8 +293,7 @@ function showPostDetail(content, id) {
     <div class="post-detail">
       <h2 class="post-title">\${post.title}</h2>
       <div class="post-meta">\${post.date}</div>
-      <div class="post-content">\${post.content.replace(/
-/g, '<br>')}</div>
+      <div class="post-content">\${post.content.replace(/\n/g, '<br>')}</div>
       <div class="post-actions">
         <button class="btn btn-primary" onclick="location.hash='#/edit/\${post.id}'">編集</button>
         <button class="btn btn-danger" onclick="deletePost(\${post.id})">削除</button>
@@ -352,8 +360,8 @@ function showEditPage(content, id) {
 }
 
 function persistPosts() {
-  // 永続化を即時に行う理由: ブラウザを閉じても学習結果を維持させるため
-  localStorage.setItem('playground-posts', JSON.stringify(posts))
+  // 学習の途中でブラウザを閉じても状態を保持したいので、操作ごとに保存します
+  localStorage.setItem(STORAGE_KEY_POSTS, JSON.stringify(posts))
 }
 
 function createPost(event) {
@@ -398,7 +406,12 @@ function deletePost(id) {
 window.addEventListener('hashchange', router)
 window.addEventListener('load', () => {
   router()
-})`
+})`;
+
+const defaultFiles = {
+  html: defaultHtml,
+  css: defaultCss,
+  js: defaultJs
 };
 
 const htmlEditor = document.getElementById('html-editor');
@@ -415,7 +428,7 @@ function loadFiles() {
   try {
     return { ...defaultFiles, ...JSON.parse(saved) };
   } catch (error) {
-    // 壊れたJSONを握りつぶす理由: 学習者が復旧方法に迷わないよう自動で初期化するため
+    // 壊れたデータで起動できないと学習が止まってしまうため、例外時は初期コードに戻します
     console.error('保存データの読み込みに失敗しました', error);
     return { ...defaultFiles };
   }
@@ -441,7 +454,7 @@ function updatePreview() {
 </head>
 <body>
 ${html}
-<script>${js.replace(/<\/script>/g, '<\/script>')}<\/script>
+<script>${js.replace(/<\/script>/g, '<\\/script>')}<\/script>
 </body>
 </html>`;
 
@@ -457,15 +470,27 @@ function saveFiles() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(files));
 }
 
+function resetPreviewData() {
+  // プレビュー側のローカルストレージを初期化しないと、記事データがサンプルに戻らないため
+  try {
+    preview.contentWindow?.localStorage?.removeItem(PREVIEW_DATA_KEY);
+  } catch (error) {
+    console.warn('プレビューの保存データを初期化できませんでした', error);
+  }
+  localStorage.removeItem(PREVIEW_DATA_KEY);
+}
+
 function resetFiles() {
   if (!confirm('初期コードに戻しますか？保存されている変更は失われます。')) {
     return;
   }
+
   files = { ...defaultFiles };
   htmlEditor.value = files.html;
   cssEditor.value = files.css;
   jsEditor.value = files.js;
   saveFiles();
+  resetPreviewData();
   updatePreview();
 }
 
