@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ブログ開発学習プラットフォーム</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        min-height: 100vh;
+        background: #f3f4f6;
+        color: #1f2933;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        background: #111827;
+        color: #f9fafb;
+        padding: 16px 24px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+      }
+
+      header h1 {
+        font-size: 20px;
+      }
+
+      header p {
+        margin-top: 6px;
+        font-size: 13px;
+        color: #d1d5db;
+      }
+
+      main {
+        flex: 1;
+        display: flex;
+        padding: 20px;
+        gap: 20px;
+        overflow: hidden;
+      }
+
+      .panel {
+        background: #ffffff;
+        border-radius: 14px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .panel.instructions {
+        flex: 0 0 320px;
+        padding: 24px;
+        gap: 18px;
+      }
+
+      .panel.instructions h2 {
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .panel.instructions ul {
+        list-style: none;
+        display: grid;
+        gap: 12px;
+        font-size: 13px;
+      }
+
+      .panel.instructions li {
+        background: #f9fafb;
+        border-radius: 10px;
+        padding: 12px 14px;
+        border: 1px solid #e5e7eb;
+      }
+
+      .panel.instructions li strong {
+        display: block;
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 4px;
+      }
+
+      .workspace {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      .pane {
+        display: flex;
+        flex-direction: column;
+        border-radius: 14px;
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+        background: #ffffff;
+      }
+
+      .pane-header {
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 14px 18px;
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .pane-header .title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #1f2937;
+      }
+
+      .pane-header .title span {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #10b981;
+      }
+
+      .preview-info {
+        font-size: 12px;
+        color: #6b7280;
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 8px;
+      }
+
+      .toolbar button {
+        border: none;
+        background: #111827;
+        color: #f9fafb;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .toolbar button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(17, 24, 39, 0.22);
+      }
+
+      .toolbar button.secondary {
+        background: #374151;
+      }
+
+      .preview-wrapper,
+      .editor-wrapper {
+        flex: 1;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      iframe {
+        flex: 1;
+        border: none;
+        background: #ffffff;
+      }
+
+      .editor-tabs {
+        background: #111827;
+        display: flex;
+        padding: 0 14px;
+        gap: 6px;
+      }
+
+      .editor-tab {
+        border: none;
+        background: transparent;
+        color: #9ca3af;
+        font-size: 13px;
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: color 0.2s ease, border 0.2s ease, background 0.2s ease;
+        border-radius: 8px 8px 0 0;
+      }
+
+      .editor-tab:hover {
+        color: #f9fafb;
+        background: rgba(55, 65, 81, 0.5);
+      }
+
+      .editor-tab.active {
+        color: #f9fafb;
+        border-color: #38bdf8;
+        background: rgba(59, 130, 246, 0.18);
+      }
+
+      textarea {
+        flex: 1;
+        width: 100%;
+        border: none;
+        background: #0f172a;
+        color: #f9fafb;
+        font-size: 13px;
+        padding: 20px;
+        font-family: "Fira Code", "Consolas", "Monaco", monospace;
+        line-height: 1.7;
+        resize: none;
+        outline: none;
+        display: none;
+        overflow: auto;
+      }
+
+      textarea.active {
+        display: block;
+      }
+
+      textarea::placeholder {
+        color: #6b7280;
+      }
+
+      textarea::-webkit-scrollbar {
+        width: 12px;
+      }
+
+      textarea::-webkit-scrollbar-track {
+        background: #111827;
+      }
+
+      textarea::-webkit-scrollbar-thumb {
+        background: #374151;
+        border-radius: 6px;
+      }
+
+      footer {
+        padding: 16px 24px;
+        font-size: 12px;
+        text-align: center;
+        color: #6b7280;
+      }
+
+      @media (max-width: 1200px) {
+        main {
+          flex-direction: column;
+        }
+
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+
+        .panel.instructions {
+          flex: none;
+        }
+      }
+
+      @media (max-width: 768px) {
+        body {
+          background: #111827;
+        }
+
+        header {
+          border-radius: 0;
+        }
+
+        main {
+          padding: 12px;
+        }
+
+        .panel.instructions {
+          padding: 18px;
+        }
+
+        .toolbar {
+          flex-wrap: wrap;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>ブログ開発学習プラットフォーム</h1>
+      <p>環境構築をせずにブラウザだけでフロントエンドと擬似バックエンドを学ぶことができます。</p>
+    </header>
+    <main>
+      <section class="panel instructions" aria-label="学習ガイド">
+        <h2>📚 学習ガイド</h2>
+        <ul>
+          <li>
+            <strong>STEP 1: HTML/CSS</strong>
+            初期コードを編集して見た目やレイアウトを自由にカスタマイズしましょう。
+          </li>
+          <li>
+            <strong>STEP 2: JavaScript</strong>
+            ルーティングやイベント処理を書き換えて動きを理解してください。
+          </li>
+          <li>
+            <strong>STEP 3: 擬似CRUD</strong>
+            右側のコードで記事の作成・閲覧・更新・削除の流れを体験できます。
+          </li>
+          <li>
+            <strong>STEP 4: 疑似DB</strong>
+            ブラウザ内でデータを保持している仕組みに注目し、バックエンド設計の疑似体験を得ましょう。
+          </li>
+        </ul>
+        <p style="font-size: 12px; color: #6b7280;">
+          ▶ ブラウザを閉じても変更内容が残るようにローカル保存を有効にしています。サンプルを試し直したい場合は「初期コードに戻す」を押してください。
+        </p>
+      </section>
+      <section class="workspace">
+        <article class="pane preview-pane">
+          <div class="pane-header">
+            <div class="title"><span></span>リアルタイムプレビュー</div>
+            <div class="preview-info">右側のコードを編集するとここに反映されます</div>
+          </div>
+          <div class="preview-wrapper">
+            <iframe id="preview" title="コードプレビュー"></iframe>
+          </div>
+        </article>
+        <article class="pane editor-pane">
+          <div class="pane-header">
+            <div class="title"><span></span>コードエディター</div>
+            <div class="toolbar">
+              <button id="save-button" type="button">変更を保存</button>
+              <button id="reset-button" class="secondary" type="button">初期コードに戻す</button>
+              <button id="download-button" class="secondary" type="button">コードをダウンロード</button>
+            </div>
+          </div>
+          <div class="editor-wrapper">
+            <nav class="editor-tabs" role="tablist" aria-label="コード種別">
+              <button class="editor-tab active" data-tab="html" type="button" role="tab" aria-selected="true">HTML</button>
+              <button class="editor-tab" data-tab="css" type="button" role="tab" aria-selected="false">CSS</button>
+              <button class="editor-tab" data-tab="js" type="button" role="tab" aria-selected="false">JavaScript</button>
+            </nav>
+            <textarea id="html-editor" class="active" spellcheck="false" aria-label="HTMLエディター"></textarea>
+            <textarea id="css-editor" spellcheck="false" aria-label="CSSエディター"></textarea>
+            <textarea id="js-editor" spellcheck="false" aria-label="JavaScriptエディター"></textarea>
+          </div>
+        </article>
+      </section>
+    </main>
+    <footer>© 2025 Blog Dev Playground</footer>
+    <script>
+      const STORAGE_KEY = "blog-dev-playground-files";
+
+      const defaultFiles = {
+        html: `<div id="app">
+  <header class="header">
+    <div class="container">
+      <h1 class="logo">My Blog</h1>
+      <nav class="nav">
+        <a href="#/" class="nav-link">ホーム</a>
+        <a href="#/about" class="nav-link">About</a>
+        <a href="#/create" class="nav-link">新規作成</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main container" id="content">
+    <!-- ここにコンテンツが表示されます -->
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2025 My Blog. All rights reserved.</p>
+    </div>
+  </footer>
+</div>`,
+        css: `* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background: #f5f5f5;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.header {
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px 0;
+  margin-bottom: 30px;
+}
+
+.logo {
+  font-size: 24px;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.nav {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-link {
+  color: #555;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: #3498db;
+}
+
+.main {
+  min-height: 60vh;
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.post-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 20px;
+  transition: box-shadow 0.2s;
+}
+
+.post-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.post-title {
+  font-size: 22px;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.post-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.post-title a:hover {
+  color: #3498db;
+}
+
+.post-meta {
+  color: #888;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.post-excerpt {
+  color: #555;
+  line-height: 1.6;
+}
+
+.post-detail {
+  max-width: 800px;
+}
+
+.post-detail .post-title {
+  font-size: 32px;
+  margin-bottom: 15px;
+}
+
+.post-content {
+  font-size: 16px;
+  line-height: 1.8;
+  color: #444;
+  margin-top: 20px;
+}
+
+.post-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: opacity 0.2s;
+}
+
+.btn:hover {
+  opacity: 0.8;
+}
+
+.btn-primary {
+  background: #3498db;
+  color: white;
+}
+
+.btn-danger {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-secondary {
+  background: #95a5a6;
+  color: white;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.form-textarea {
+  min-height: 200px;
+  resize: vertical;
+}
+
+.footer {
+  background: #2c3e50;
+  color: white;
+  padding: 20px 0;
+  text-align: center;
+}`,
+        js: `// 擬似DBをメモリとローカルストレージの二層で保持する理由: リロードしても学習状態が失われないようにするため
+let posts = JSON.parse(localStorage.getItem('playground-posts') || '[]');
+
+if (!posts.length) {
+  // 初期記事を投入する理由: 画面が空だと学習者が操作の結果をイメージしづらいため
+  posts = [
+    {
+      id: 1,
+      title: '初めてのブログ投稿',
+      content: 'これは最初のブログ記事です。HTML、CSS、JavaScriptを使って作られています。',
+      date: '2025-01-15'
+    },
+    {
+      id: 2,
+      title: 'ルーティングについて',
+      content: 'ルーティングを使うことで、異なるページを表示できます。URLのハッシュを使って実装しています。',
+      date: '2025-01-20'
+    },
+    {
+      id: 3,
+      title: 'CRUD操作とは',
+      content: 'Create（作成）、Read（読み取り）、Update（更新）、Delete（削除）の4つの基本操作のことです。',
+      date: '2025-01-25'
+    }
+  ];
+}
+
+let nextId = posts.reduce((max, post) => Math.max(max, post.id), 0) + 1;
+
+// ハッシュルーターを利用する理由: 単一ページで画面遷移を疑似的に学べるようにするため
+function router() {
+  const hash = window.location.hash || '#/'
+  const content = document.getElementById('content')
+
+  if (hash === '#/') {
+    showHomePage(content)
+  } else if (hash === '#/about') {
+    showAboutPage(content)
+  } else if (hash === '#/create') {
+    showCreatePage(content)
+  } else if (hash.startsWith('#/post/')) {
+    const id = Number(hash.split('/')[2])
+    showPostDetail(content, id)
+  } else if (hash.startsWith('#/edit/')) {
+    const id = Number(hash.split('/')[2])
+    showEditPage(content, id)
+  }
+}
+
+function showHomePage(content) {
+  let html = '<h2>最新の記事</h2><div class="post-list">'
+
+  posts.forEach((post) => {
+    html += `
+      <div class="post-card">
+        <h3 class="post-title">
+          <a href="#/post/${post.id}">${post.title}</a>
+        </h3>
+        <div class="post-meta">${post.date}</div>
+        <p class="post-excerpt">${post.content.substring(0, 100)}...</p>
+      </div>
+    `
+  })
+
+  html += '</div>'
+  content.innerHTML = html
+}
+
+function showPostDetail(content, id) {
+  const post = posts.find((p) => p.id === id)
+
+  if (!post) {
+    content.innerHTML = '<h2>記事が見つかりません</h2>'
+    return
+  }
+
+  content.innerHTML = `
+    <div class="post-detail">
+      <h2 class="post-title">${post.title}</h2>
+      <div class="post-meta">${post.date}</div>
+      <div class="post-content">${post.content.replace(/\n/g, '<br>')}</div>
+      <div class="post-actions">
+        <button class="btn btn-primary" onclick="location.hash='#/edit/${post.id}'">編集</button>
+        <button class="btn btn-danger" onclick="deletePost(${post.id})">削除</button>
+        <button class="btn btn-secondary" onclick="location.hash='#/'">戻る</button>
+      </div>
+    </div>
+  `
+}
+
+function showAboutPage(content) {
+  content.innerHTML = `
+    <h2>About</h2>
+    <p>このブログは学習用のデモサイトです。</p>
+    <p>以下の機能を学べます：</p>
+    <ul style="margin-left: 20px; margin-top: 10px;">
+      <li>HTML/CSSによるレイアウト</li>
+      <li>JavaScriptによるルーティング</li>
+      <li>CRUD操作（作成・読取・更新・削除）</li>
+    </ul>
+  `
+}
+
+function showCreatePage(content) {
+  content.innerHTML = `
+    <h2>新しい記事を作成</h2>
+    <form onsubmit="createPost(event)">
+      <div class="form-group">
+        <label class="form-label">タイトル</label>
+        <input type="text" class="form-input" id="title" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">本文</label>
+        <textarea class="form-textarea" id="content" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">投稿する</button>
+      <button type="button" class="btn btn-secondary" onclick="location.hash='#/'">キャンセル</button>
+    </form>
+  `
+}
+
+function showEditPage(content, id) {
+  const post = posts.find((p) => p.id === id)
+
+  if (!post) {
+    content.innerHTML = '<h2>記事が見つかりません</h2>'
+    return
+  }
+
+  content.innerHTML = `
+    <h2>記事を編集</h2>
+    <form onsubmit="updatePost(event, ${id})">
+      <div class="form-group">
+        <label class="form-label">タイトル</label>
+        <input type="text" class="form-input" id="title" value="${post.title}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">本文</label>
+        <textarea class="form-textarea" id="content" required>${post.content}</textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">更新する</button>
+      <button type="button" class="btn btn-secondary" onclick="location.hash='#/post/${id}'">キャンセル</button>
+    </form>
+  `
+}
+
+function persistPosts() {
+  // 永続化を即時に行う理由: ブラウザを閉じても学習結果を維持させるため
+  localStorage.setItem('playground-posts', JSON.stringify(posts))
+}
+
+function createPost(event) {
+  event.preventDefault()
+  const title = document.getElementById('title').value
+  const content = document.getElementById('content').value
+
+  const newPost = {
+    id: nextId++,
+    title,
+    content,
+    date: new Date().toISOString().split('T')[0]
+  }
+
+  posts.unshift(newPost)
+  persistPosts()
+  location.hash = '#/'
+}
+
+function updatePost(event, id) {
+  event.preventDefault()
+  const title = document.getElementById('title').value
+  const content = document.getElementById('content').value
+
+  const post = posts.find((p) => p.id === id)
+  if (post) {
+    post.title = title
+    post.content = content
+    persistPosts()
+    location.hash = `#/post/${id}`
+  }
+}
+
+function deletePost(id) {
+  if (confirm('本当に削除しますか？')) {
+    posts = posts.filter((p) => p.id !== id)
+    persistPosts()
+    location.hash = '#/'
+  }
+}
+
+window.addEventListener('hashchange', router)
+window.addEventListener('load', () => {
+  router()
+})`
+      }
+
+      const htmlEditor = document.getElementById('html-editor')
+      const cssEditor = document.getElementById('css-editor')
+      const jsEditor = document.getElementById('js-editor')
+      const preview = document.getElementById('preview')
+
+      function loadFiles() {
+        const saved = localStorage.getItem(STORAGE_KEY)
+        if (!saved) {
+          return { ...defaultFiles }
+        }
+
+        try {
+          return { ...defaultFiles, ...JSON.parse(saved) }
+        } catch (error) {
+          // 壊れたJSONを握りつぶす理由: 学習者が復旧方法に迷わないよう自動で初期化するため
+          console.error('保存データの読み込みに失敗しました', error)
+          return { ...defaultFiles }
+        }
+      }
+
+      let files = loadFiles()
+
+      htmlEditor.value = files.html
+      cssEditor.value = files.css
+      jsEditor.value = files.js
+
+      function updatePreview() {
+        const html = htmlEditor.value
+        const css = cssEditor.value
+        const js = jsEditor.value
+
+        const doc = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>${css}</style>
+</head>
+<body>
+${html}
+<script>${js.replace(/<\\/script>/g, '<\\/script>')}<\\/script>
+</body>
+</html>`
+
+        preview.srcdoc = doc
+      }
+
+      function saveFiles() {
+        files = {
+          html: htmlEditor.value,
+          css: cssEditor.value,
+          js: jsEditor.value
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(files))
+      }
+
+      function resetFiles() {
+        if (!confirm('初期コードに戻しますか？保存されている変更は失われます。')) {
+          return
+        }
+        files = { ...defaultFiles }
+        htmlEditor.value = files.html
+        cssEditor.value = files.css
+        jsEditor.value = files.js
+        saveFiles()
+        updatePreview()
+      }
+
+      function downloadProject() {
+        const blob = new Blob(
+          [
+            `<!DOCTYPE html>\n<html lang="ja">\n<head>\n<meta charset="UTF-8" />\n<meta name="viewport" content="width=device-width, initial-scale=1.0" />\n<style>\n${cssEditor.value}\n</style>\n</head>\n<body>\n${htmlEditor.value}\n<script>\n${jsEditor.value}\n<\\/script>\n</body>\n</html>`
+          ],
+          { type: 'text/html' }
+        )
+
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'blog-playground.html'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }
+
+      document.querySelectorAll('.editor-tab').forEach((tab) => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.editor-tab').forEach((item) => {
+            item.classList.remove('active')
+            item.setAttribute('aria-selected', 'false')
+          })
+          document.querySelectorAll('textarea').forEach((area) => {
+            area.classList.remove('active')
+          })
+          tab.classList.add('active')
+          tab.setAttribute('aria-selected', 'true')
+          const target = document.getElementById(`${tab.dataset.tab}-editor`)
+          target.classList.add('active')
+          target.focus()
+        })
+      })
+
+      htmlEditor.addEventListener('input', () => {
+        updatePreview()
+      })
+      cssEditor.addEventListener('input', () => {
+        updatePreview()
+      })
+      jsEditor.addEventListener('input', () => {
+        updatePreview()
+      })
+
+      document.getElementById('save-button').addEventListener('click', () => {
+        saveFiles()
+      })
+      document.getElementById('reset-button').addEventListener('click', () => {
+        resetFiles()
+      })
+      document.getElementById('download-button').addEventListener('click', () => {
+        downloadProject()
+      })
+
+      updatePreview()
+    </script>
+  </body>
+</html>
