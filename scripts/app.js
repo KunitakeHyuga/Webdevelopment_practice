@@ -558,6 +558,20 @@ function deletePost(id) {
   }
 }
 
+// ハッシュリンクをそのまま遷移させると親ページを開いてしまうため、ここで抑止して手動でハッシュを書き換えます
+document.addEventListener('click', (event) => {
+  const anchor = event.target.closest('a[href^="#/"]')
+  if (!anchor) {
+    return
+  }
+
+  event.preventDefault()
+  const targetHash = anchor.getAttribute('href')
+  if (typeof targetHash === 'string') {
+    window.location.hash = targetHash
+  }
+})
+
 window.addEventListener('hashchange', router)
 window.addEventListener('load', () => {
   router()
