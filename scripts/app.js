@@ -209,7 +209,7 @@ body {
   text-align: center;
 }`;
 
-const defaultJs = String.raw`// このサンプルコードはSPAとCRUDの両方を体験してもらうため、フロントエンド側でデータを完結させています
+const defaultJs = `// このサンプルコードはSPAとCRUDの両方を体験してもらうため、フロントエンド側でデータを完結させています
 const STORAGE_KEY_POSTS = '${PREVIEW_DATA_KEY}';
 
 const seedPosts = [
@@ -266,7 +266,7 @@ function showHomePage(content) {
   let html = '<h2>最新の記事</h2><div class="post-list">'
 
   posts.forEach((post) => {
-    html += `
+    html += \`
       <div class="post-card">
         <h3 class="post-title">
           <a href="#/post/\${post.id}">\${post.title}</a>
@@ -274,7 +274,7 @@ function showHomePage(content) {
         <div class="post-meta">\${post.date}</div>
         <p class="post-excerpt">\${post.content.substring(0, 100)}...</p>
       </div>
-    `
+    \`
   })
 
   html += '</div>'
@@ -289,7 +289,7 @@ function showPostDetail(content, id) {
     return
   }
 
-  content.innerHTML = `
+  content.innerHTML = \`
     <div class="post-detail">
       <h2 class="post-title">\${post.title}</h2>
       <div class="post-meta">\${post.date}</div>
@@ -300,11 +300,11 @@ function showPostDetail(content, id) {
         <button class="btn btn-secondary" onclick="location.hash='#/'">戻る</button>
       </div>
     </div>
-  `
+  \`
 }
 
 function showAboutPage(content) {
-  content.innerHTML = `
+  content.innerHTML = \`
     <h2>About</h2>
     <p>このブログは学習用のデモサイトです。</p>
     <p>以下の機能を学べます：</p>
@@ -313,11 +313,11 @@ function showAboutPage(content) {
       <li>JavaScriptによるルーティング</li>
       <li>CRUD操作（作成・読取・更新・削除）</li>
     </ul>
-  `
+  \`
 }
 
 function showCreatePage(content) {
-  content.innerHTML = `
+  content.innerHTML = \`
     <h2>新しい記事を作成</h2>
     <form onsubmit="createPost(event)">
       <div class="form-group">
@@ -331,7 +331,7 @@ function showCreatePage(content) {
       <button type="submit" class="btn btn-primary">投稿する</button>
       <button type="button" class="btn btn-secondary" onclick="location.hash='#/'">キャンセル</button>
     </form>
-  `
+  \`
 }
 
 function showEditPage(content, id) {
@@ -342,7 +342,7 @@ function showEditPage(content, id) {
     return
   }
 
-  content.innerHTML = `
+  content.innerHTML = \`
     <h2>記事を編集</h2>
     <form onsubmit="updatePost(event, \${id})">
       <div class="form-group">
@@ -356,7 +356,7 @@ function showEditPage(content, id) {
       <button type="submit" class="btn btn-primary">更新する</button>
       <button type="button" class="btn btn-secondary" onclick="location.hash='#/post/\${id}'">キャンセル</button>
     </form>
-  `
+  \`
 }
 
 function persistPosts() {
@@ -391,7 +391,7 @@ function updatePost(event, id) {
     post.title = title
     post.content = content
     persistPosts()
-    location.hash = `#/post/\${id}`
+    location.hash = \`#/post/\${id}\`
   }
 }
 
