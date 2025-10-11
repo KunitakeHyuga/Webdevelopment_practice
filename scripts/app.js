@@ -357,10 +357,10 @@ if (!postsContainer || !addButton || !titleInput || !contentInput) {
     renderPosts();
   }
 
-  addButton.addEventListener("click", handleSubmit);
   resetForm();
   renderPosts();
 
+  window.handleSubmit = handleSubmit;
   window.startEdit = startEdit;
   window.cancelEdit = cancelEdit;
   window.saveEdit = saveEdit;
