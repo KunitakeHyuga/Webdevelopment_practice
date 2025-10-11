@@ -16,20 +16,24 @@
         <h2>📚 学習ガイド</h2>
         <ul>
           <li>
-            <strong>STEP 1: HTML/CSS</strong>
-            初期コードを編集して見た目やレイアウトを自由にカスタマイズしましょう。
+            <strong>STEP 1: HTML</strong>
+            投稿ボタンを配置し、必要なフォーム要素をHTMLだけで用意してみましょう。
           </li>
           <li>
-            <strong>STEP 2: JavaScript</strong>
-            ルーティングやイベント処理を書き換えて動きを理解してください。
+            <strong>STEP 2: CSS</strong>
+            ボタンやフォームの色・形・余白を調整して、見栄えと使いやすさを改善します。
           </li>
           <li>
-            <strong>STEP 3: 擬似CRUD</strong>
-            右側のコードで記事の作成・閲覧・更新・削除の流れを体験できます。
+            <strong>STEP 3: 既存関数と連携</strong>
+            既存の投稿用関数をボタンに紐づけ、クリックで投稿できるようにしましょう。
           </li>
           <li>
-            <strong>STEP 4: 疑似DB</strong>
-            ブラウザ内でデータを保持している仕組みに注目し、バックエンド設計の疑似体験を得ましょう。
+            <strong>STEP 4: 削除フローの実装</strong>
+            削除ボタン用の関数を作成し、投稿一覧から個別記事を消せるように仕上げます。
+          </li>
+          <li>
+            <strong>STEP 5: 挙動チェック</strong>
+            作成・削除の動きを実際に操作し、エラーの有無やローカル保存の状態を確認しましょう。
           </li>
         </ul>
         <p style="font-size: 12px; color: #6b7280;">
@@ -57,13 +61,22 @@
           </div>
           <div class="editor-wrapper">
             <nav class="editor-tabs" role="tablist" aria-label="コード種別">
-              <button class="editor-tab active" data-tab="html" type="button" role="tab" aria-selected="true">HTML</button>
-              <button class="editor-tab" data-tab="css" type="button" role="tab" aria-selected="false">CSS</button>
-              <button class="editor-tab" data-tab="js" type="button" role="tab" aria-selected="false">JavaScript</button>
+              <button class="editor-tab active" data-tab="html" data-step-label="STEP 1・2" type="button" role="tab" aria-selected="true">
+                <span class="tab-step">STEP 1・2</span>
+                <span class="tab-name">HTML</span>
+              </button>
+              <button class="editor-tab" data-tab="css" data-step-label="STEP 2" type="button" role="tab" aria-selected="false">
+                <span class="tab-step">STEP 2</span>
+                <span class="tab-name">CSS</span>
+              </button>
+              <button class="editor-tab" data-tab="js" data-step-label="STEP 3・4" type="button" role="tab" aria-selected="false">
+                <span class="tab-step">STEP 3・4</span>
+                <span class="tab-name">JavaScript</span>
+              </button>
             </nav>
-            <textarea id="html-editor" class="active" spellcheck="false" aria-label="HTMLエディター"></textarea>
-            <textarea id="css-editor" spellcheck="false" aria-label="CSSエディター"></textarea>
-            <textarea id="js-editor" spellcheck="false" aria-label="JavaScriptエディター"></textarea>
+            <textarea id="html-editor" class="active highlight-html" spellcheck="false" aria-label="HTMLエディター"></textarea>
+            <textarea id="css-editor" class="highlight-css" spellcheck="false" aria-label="CSSエディター"></textarea>
+            <textarea id="js-editor" class="highlight-js" spellcheck="false" aria-label="JavaScriptエディター"></textarea>
           </div>
         </article>
       </section>

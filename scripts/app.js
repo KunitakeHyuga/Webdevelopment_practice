@@ -1,581 +1,371 @@
 const STORAGE_KEY = 'blog-dev-playground-files';
 const PREVIEW_DATA_KEY = 'playground-posts';
 
-const defaultHtml = String.raw`<!-- 画面遷移がシンプルに追えるよう、無難なブログ投稿レイアウトを土台にしています -->
-<div class="blog-app">
-  <header class="blog-header">
-    <div class="header-inner">
-      <h1 class="brand">Simple Blog</h1>
-      <p class="tagline">日々の気づきを気軽に発信するサンプルブログです。</p>
-      <nav class="nav">
-        <a href="#/" class="nav-link">ホーム</a>
-        <a href="#/about" class="nav-link">About</a>
-        <a href="#/create" class="nav-link nav-link-primary">記事を書く</a>
-      </nav>
-    </div>
-  </header>
+const defaultHtml = String.raw`<header>
+  <h1>My Mini Blog</h1>
+</header>
 
-  <main class="blog-main">
-    <section class="hero">
-      <h2 class="hero-title">ブログ投稿の基本を体験しましょう</h2>
-      <p class="hero-text">投稿・閲覧・編集の流れを確認できるように、一覧と詳細をシンプルにまとめています。</p>
-      <button type="button" class="btn btn-primary" onclick="location.hash='#/create'">新しい記事を作成</button>
-    </section>
+<main id="posts"></main>
 
-    <section id="content" class="view-area">
-      <!-- JavaScriptで記事一覧や詳細を差し替えます -->
-    </section>
-  </main>
+<section id="create">
+  <h2>新しい記事を作成</h2>
+  <input id="title" placeholder="タイトル" />
+  <textarea id="content" placeholder="内容"></textarea>
+  <button id="add" type="button">投稿</button>
+</section>`;
 
-  <footer class="blog-footer">
-    <small>© 2025 Simple Blog. All rights reserved.</small>
-  </footer>
-</div>`;
-
-const defaultCss = String.raw`/* どの画面でも落ち着いた雰囲気に見えるよう、ベースカラーを柔らかく統一しています */
-:root {
-  --color-bg: #f5f7fb;
-  --color-surface: #ffffff;
-  --color-primary: #2563eb;
-  --color-text: #1f2937;
-  --color-muted: #6b7280;
-}
-
-* {
+const defaultCss = String.raw`body {
+  font-family: sans-serif;
+  background: #f5f5f5;
   margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  line-height: 1.7;
-  color: var(--color-text);
-  background: var(--color-bg);
-}
-
-a {
-  color: var(--color-primary);
-  text-decoration: none;
-}
-
-.blog-app {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 32px 20px 60px;
-}
-
-.blog-header {
-  background: var(--color-surface);
-  border-radius: 16px;
-  padding: 28px 32px;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-  margin-bottom: 28px;
-}
-
-.header-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.brand {
-  font-size: 28px;
-  font-weight: 700;
-}
-
-.tagline {
-  font-size: 14px;
-  color: var(--color-muted);
-}
-
-.nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.nav-link {
-  padding: 8px 16px;
-  border-radius: 9999px;
-  border: 1px solid rgba(37, 99, 235, 0.1);
-  color: var(--color-text);
-  background: rgba(37, 99, 235, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.nav-link:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.18);
-}
-
-.nav-link-primary {
-  background: var(--color-primary);
-  color: #ffffff;
-  border-color: transparent;
-}
-
-.blog-main {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.hero {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(59, 130, 246, 0.16));
-  border-radius: 16px;
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.hero-title {
-  font-size: 24px;
-  font-weight: 700;
-}
-
-.hero-text {
-  font-size: 15px;
-  color: var(--color-muted);
-}
-
-.view-area {
-  background: var(--color-surface);
-  border-radius: 16px;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-  padding: 32px;
-  min-height: 320px;
-}
-
-.section-title {
-  font-size: 20px;
-  margin-bottom: 16px;
-}
-
-.post-list {
-  display: grid;
-  gap: 18px;
-}
-
-.post-card {
-  border: 1px solid rgba(37, 99, 235, 0.08);
-  border-radius: 14px;
-  padding: 20px 22px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(249, 250, 251, 0.9));
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.post-card:hover {
-  box-shadow: 0 16px 32px rgba(37, 99, 235, 0.12);
-}
-
-.post-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.post-meta {
-  font-size: 13px;
-  color: var(--color-muted);
-}
-
-.post-excerpt {
-  font-size: 14px;
-  color: var(--color-text);
+  color: #2f2f2f;
   line-height: 1.6;
 }
 
-.post-detail {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-.post-content {
-  font-size: 15px;
-  line-height: 1.8;
-  color: var(--color-text);
+header {
+  background: #333;
+  color: white;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+  display: grid;
+  gap: 2rem;
+}
+
+#posts {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.empty-state {
+  background: white;
+  border-radius: 12px;
+  padding: 1.75rem 1.5rem;
+  text-align: center;
+  color: #5a6475;
+  border: 1px dashed rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+.post {
+  background: white;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.post h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.post p {
+  margin: 0 0 1rem;
+  color: #555;
 }
 
 .post-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 0.75rem;
 }
 
-.empty-state {
-  text-align: center;
+.post.editing {
+  border-color: rgba(0, 123, 255, 0.45);
+  box-shadow: 0 20px 36px rgba(0, 123, 255, 0.18);
+  background: linear-gradient(135deg, rgba(0, 123, 255, 0.08), #ffffff);
+}
+
+.post-edit-form {
   display: grid;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
-.about-section {
-  display: grid;
-  gap: 14px;
-  color: var(--color-text);
-}
-
-.form-card {
-  display: grid;
-  gap: 20px;
-}
-
-.form-group {
-  display: grid;
-  gap: 8px;
-}
-
-.form-label {
+.post-edit-label {
+  font-size: 0.95rem;
   font-weight: 600;
+  color: #1f2937;
 }
 
-.form-input,
-.form-textarea {
+.post-edit-input,
+.post-edit-textarea {
   width: 100%;
-  padding: 12px;
+  padding: 0.75rem 1rem;
+  border: 1px solid #cfd6e4;
   border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.6);
-  font-size: 14px;
-  font-family: inherit;
-  background: rgba(249, 250, 251, 0.9);
+  font-size: 1rem;
+  background: #f9fbff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
-.form-textarea {
-  min-height: 220px;
+.post-edit-textarea {
+  min-height: 160px;
   resize: vertical;
 }
 
-.form-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+.post-edit-input:focus,
+.post-edit-textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15);
 }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 10px 18px;
-  border-radius: 9999px;
+#create {
+  background: white;
+  padding: 1.75rem 1.5rem 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  display: grid;
+  gap: 1.25rem;
+  width: min(520px, calc(100% - 2rem));
+  margin: 0 auto 3rem;
+}
+
+#create h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+#create input,
+#create textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #cfd6e4;
+  border-radius: 10px;
+  font-size: 1rem;
+  background: #f9fbff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+#create textarea {
+  min-height: 160px;
+  resize: vertical;
+}
+
+#create input:focus,
+#create textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15);
+}
+
+button {
+  background: #007bff;
+  color: white;
   border: none;
-  font-size: 14px;
+  padding: 0.7rem 1.25rem;
+  border-radius: 999px;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
-.btn:hover {
+button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
+  background: #0065d6;
+  box-shadow: 0 10px 24px rgba(0, 101, 214, 0.25);
 }
 
-.btn-primary {
-  background: var(--color-primary);
-  color: #ffffff;
+button.secondary {
+  background: white;
+  color: #0f49a1;
+  border: 1px solid rgba(15, 73, 161, 0.35);
+  box-shadow: none;
 }
 
-.btn-secondary {
-  background: rgba(15, 23, 42, 0.08);
-  color: var(--color-text);
+button.secondary:hover {
+  background: rgba(15, 73, 161, 0.08);
 }
 
-.btn-danger {
+button.danger {
   background: #ef4444;
-  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(239, 68, 68, 0.25);
 }
 
-.btn-link {
-  background: transparent;
-  color: var(--color-primary);
-  padding: 0;
-  border-radius: 0;
-}
-
-.blog-footer {
-  margin-top: 32px;
-  text-align: center;
-  font-size: 12px;
-  color: var(--color-muted);
-}
-
-@media (max-width: 768px) {
-  .blog-app {
-    padding: 24px 16px 48px;
-  }
-
-  .blog-header,
-  .view-area,
-  .hero {
-    padding: 24px;
-  }
+button.danger:hover {
+  background: #dc2626;
+  box-shadow: 0 12px 28px rgba(220, 38, 38, 0.28);
 }`;
 
-const defaultJs = `// このサンプルでは、無難なブログ投稿画面に必要なCRUDと簡易ルーティングをフロントだけで体験できるようにしています
-const STORAGE_KEY_POSTS = \${PREVIEW_DATA_KEY};
+const defaultJs = `const STORAGE_KEY_POSTS = "posts";
 
-const seedPosts = [
-  {
-    id: 1,
-    title: '週末に読みたい本のメモ',
-    content: 'このサンプル記事では、最近気になっている本の感想や読みたいポイントを整理しています。\\n学習目的なので、自由にタイトルや本文を書き換えて使ってください。',
-    date: '2025-02-01'
-  },
-  {
-    id: 2,
-    title: '開発メモ: ブログ投稿の流れ',
-    content: 'ブログ投稿は、下書き→プレビュー→公開という手順を踏むと整理しやすくなります。\\nフォーム入力とプレビューの関係に注目してみましょう。',
-    date: '2025-02-03'
+function loadPosts() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY_POSTS);
+    const parsed = stored ? JSON.parse(stored) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.warn("投稿データの読み込みに失敗しました", error);
+    return [];
   }
-];
-
-let posts = JSON.parse(localStorage.getItem(STORAGE_KEY_POSTS) || '[]');
-
-if (!posts.length) {
-  // 空の一覧だと完成イメージが掴みにくいので、最低限のシードデータを用意しています
-  posts = [...seedPosts];
 }
 
-let nextId = posts.reduce((max, post) => Math.max(max, post.id), 0) + 1;
+function savePosts(data) {
+  localStorage.setItem(STORAGE_KEY_POSTS, JSON.stringify(data));
+}
 
-// HTMLを安全に表示するために、ユーザー入力は必ずエスケープします
 function escapeHtml(value) {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
-// ハッシュルーティングを使う理由: 単一ページでも画面遷移の概念を体験してもらいたいため
-function router() {
-  const hash = window.location.hash || '#/'
-  const content = document.getElementById('content')
+const postsContainer = document.getElementById("posts");
+const addButton = document.getElementById("add");
+const titleInput = document.getElementById("title");
+const contentInput = document.getElementById("content");
 
-  if (hash === '#/') {
-    showHomePage(content)
-  } else if (hash === '#/about') {
-    showAboutPage(content)
-  } else if (hash === '#/create') {
-    showCreatePage(content)
-  } else if (hash.startsWith('#/post/')) {
-    const id = Number(hash.split('/')[2])
-    showPostDetail(content, id)
-  } else if (hash.startsWith('#/edit/')) {
-    const id = Number(hash.split('/')[2])
-    showEditPage(content, id)
+if (!postsContainer || !addButton || !titleInput || !contentInput) {
+  console.error("必要な要素が見つかりませんでした。");
+} else {
+  let posts = loadPosts();
+  let editingIndex = null;
+
+  function resetForm() {
+    titleInput.value = "";
+    contentInput.value = "";
   }
+
+  function createPostView(post, index) {
+    const safeTitle = escapeHtml(post.title || "");
+    const safeContent = escapeHtml(post.content || "").replace(/\\n/g, "<br>");
+    return '<article class="post">' +
+      '<h3>' + safeTitle + '</h3>' +
+      '<p>' + safeContent + '</p>' +
+      '<div class="post-actions">' +
+      '<button type="button" class="secondary" onclick="startEdit(' + index + ')">編集</button>' +
+      '<button type="button" class="danger" onclick="deletePost(' + index + ')">削除</button>' +
+      '</div>' +
+      '</article>';
+  }
+
+  function createEditView(post, index) {
+    const safeTitle = escapeHtml(post.title || "");
+    const safeContent = escapeHtml(post.content || "");
+    return '<article class="post editing">' +
+      '<div class="post-edit-form">' +
+      '<label class="post-edit-label" for="edit-title-' + index + '">タイトル</label>' +
+      '<input id="edit-title-' + index + '" class="post-edit-input" value="' + safeTitle + '">' +
+      '<label class="post-edit-label" for="edit-content-' + index + '">内容</label>' +
+      '<textarea id="edit-content-' + index + '" class="post-edit-textarea">' + safeContent + '</textarea>' +
+      '<div class="post-actions">' +
+      '<button type="button" onclick="saveEdit(' + index + ')">保存</button>' +
+      '<button type="button" class="secondary" onclick="cancelEdit()">キャンセル</button>' +
+      '<button type="button" class="danger" onclick="deletePost(' + index + ')">削除</button>' +
+      '</div>' +
+      '</div>' +
+      '</article>';
+  }
+
+  function renderPosts() {
+    if (!posts.length) {
+      postsContainer.innerHTML = '<div class="empty-state">投稿はまだありません。最初の記事を作成しましょう。</div>';
+      return;
+    }
+
+    postsContainer.innerHTML = posts
+      .map(function (post, index) {
+        return editingIndex === index ? createEditView(post, index) : createPostView(post, index);
+      })
+      .join("");
+  }
+
+  function handleSubmit() {
+    const title = titleInput.value.trim();
+    const content = contentInput.value.trim();
+
+    if (!title || !content) {
+      alert("タイトルと内容を入力してください");
+      return;
+    }
+
+    posts.push({ title: title, content: content });
+    savePosts(posts);
+    renderPosts();
+    resetForm();
+  }
+
+  function startEdit(index) {
+    editingIndex = index;
+    renderPosts();
+    const titleField = document.getElementById('edit-title-' + index);
+    if (titleField) {
+      titleField.focus();
+    }
+  }
+
+  function cancelEdit() {
+    editingIndex = null;
+    renderPosts();
+  }
+
+  function saveEdit(index) {
+    const titleField = document.getElementById('edit-title-' + index);
+    const contentField = document.getElementById('edit-content-' + index);
+
+    if (!titleField || !contentField) {
+      return;
+    }
+
+    const title = titleField.value.trim();
+    const content = contentField.value.trim();
+
+    if (!title || !content) {
+      alert("タイトルと内容を入力してください");
+      return;
+    }
+
+    posts[index] = { title: title, content: content };
+    savePosts(posts);
+    editingIndex = null;
+    renderPosts();
+  }
+
+  function deletePost(index) {
+    if (!confirm("この記事を削除しますか？")) {
+      return;
+    }
+    posts.splice(index, 1);
+    savePosts(posts);
+
+    if (editingIndex === index) {
+      editingIndex = null;
+    } else if (editingIndex !== null && editingIndex > index) {
+      editingIndex -= 1;
+    }
+
+    renderPosts();
+  }
+
+  addButton.addEventListener("click", handleSubmit);
+  resetForm();
+  renderPosts();
+
+  window.startEdit = startEdit;
+  window.cancelEdit = cancelEdit;
+  window.saveEdit = saveEdit;
+  window.deletePost = deletePost;
 }
-
-function showHomePage(content) {
-  if (!posts.length) {
-    content.innerHTML = \`
-      <section class="empty-state">
-        <h3>まだ記事がありません</h3>
-        <p>右上の「記事を書く」から投稿を作成すると、ここに一覧が表示されます。</p>
-        <button type="button" class="btn btn-primary" onclick="location.hash='#/create'">記事を書く</button>
-      </section>
-    \`
-    return
-  }
-
-  const list = posts
-    .map((post) => {
-      const flatContent = post.content.replace(/\\n/g, ' ').trim()
-      const excerptText = flatContent.length > 110 ? \`\${flatContent.slice(0, 110)}...\` : flatContent
-      const safeTitle = escapeHtml(post.title)
-      const safeExcerpt = escapeHtml(excerptText || '本文が入力されていません。')
-
-      return \`
-        <article class="post-card">
-          <a class="post-title" href="#/post/\${post.id}">\${safeTitle}</a>
-          <div class="post-meta">\${post.date}</div>
-          <p class="post-excerpt">\${safeExcerpt}</p>
-          <button type="button" class="btn btn-link" onclick="location.hash='#/post/\${post.id}'">続きを読む</button>
-        </article>
-      \`
-    })
-    .join('')
-
-  content.innerHTML = \`
-    <section class="post-section">
-      <h2 class="section-title">最新の記事</h2>
-      <div class="post-list">\${list}</div>
-    </section>
-  \`
-}
-
-function showPostDetail(content, id) {
-  const post = posts.find((item) => item.id === id)
-
-  if (!post) {
-    content.innerHTML = '<p>記事が見つかりませんでした。一覧に戻ってください。</p>'
-    return
-  }
-
-  const safeTitle = escapeHtml(post.title)
-  const safeContent = escapeHtml(post.content).replace(/\\n/g, '<br>')
-
-  content.innerHTML = \`
-    <article class="post-detail">
-      <h2 class="post-title">\${safeTitle}</h2>
-      <div class="post-meta">\${post.date}</div>
-      <div class="post-content">\${safeContent}</div>
-      <div class="post-actions">
-        <button type="button" class="btn btn-primary" onclick="location.hash='#/edit/\${post.id}'">編集する</button>
-        <button type="button" class="btn btn-danger" onclick="deletePost(\${post.id})">削除する</button>
-        <button type="button" class="btn btn-secondary" onclick="location.hash='#/'">一覧へ戻る</button>
-      </div>
-    </article>
-  \`
-}
-
-function showAboutPage(content) {
-  content.innerHTML = \`
-    <section class="about-section">
-      <h2 class="section-title">About</h2>
-      <p>このサンプルは、ブログ投稿アプリの最小構成をブラウザだけで試せるようにした学習用テンプレートです。</p>
-      <ul>
-        <li>ハッシュURLでページ切り替えの雰囲気を再現しています。</li>
-        <li>記事データはローカルストレージに保存されるため、ブラウザを閉じても続きから学べます。</li>
-        <li>HTML・CSSを変更するとレイアウトがリアルタイムで更新されます。</li>
-      </ul>
-    </section>
-  \`
-}
-
-function showCreatePage(content) {
-  content.innerHTML = \`
-    <section class="form-card">
-      <h2 class="section-title">新しい記事を作成</h2>
-      <form onsubmit="createPost(event)">
-        <div class="form-group">
-          <label class="form-label" for="title">タイトル</label>
-          <input id="title" type="text" class="form-input" placeholder="例: 今日の学びメモ" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="content">本文</label>
-          <textarea id="content" class="form-textarea" placeholder="本文を入力してください" required></textarea>
-        </div>
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary">投稿する</button>
-          <button type="button" class="btn btn-secondary" onclick="location.hash='#/'">キャンセル</button>
-        </div>
-      </form>
-    </section>
-  \`
-}
-
-function showEditPage(content, id) {
-  const post = posts.find((item) => item.id === id)
-
-  if (!post) {
-    content.innerHTML = '<p>編集対象の記事が見つかりません。</p>'
-    return
-  }
-
-  content.innerHTML = \`
-    <section class="form-card">
-      <h2 class="section-title">記事を編集</h2>
-      <form onsubmit="updatePost(event, \${id})">
-        <div class="form-group">
-          <label class="form-label" for="title">タイトル</label>
-          <input id="title" type="text" class="form-input" value="\${escapeHtml(post.title)}" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="content">本文</label>
-          <textarea id="content" class="form-textarea" required>\${escapeHtml(post.content)}</textarea>
-        </div>
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary">更新する</button>
-          <button type="button" class="btn btn-secondary" onclick="location.hash='#/post/\${id}'">キャンセル</button>
-        </div>
-      </form>
-    </section>
-  \`
-}
-
-function persistPosts() {
-  // 学習の進み具合を保持することで、再訪時に復習できるようにしています
-  localStorage.setItem(STORAGE_KEY_POSTS, JSON.stringify(posts))
-}
-
-function createPost(event) {
-  event.preventDefault()
-  const titleInput = document.getElementById('title')
-  const contentInput = document.getElementById('content')
-  const title = titleInput.value.trim()
-  const content = contentInput.value.trim()
-
-  if (!title || !content) {
-    alert('タイトルと本文は必須です。')
-    return
-  }
-
-  const newPost = {
-    id: nextId++,
-    title,
-    content,
-    date: new Date().toISOString().split('T')[0]
-  }
-
-  posts.unshift(newPost)
-  persistPosts()
-  location.hash = '#/'
-}
-
-function updatePost(event, id) {
-  event.preventDefault()
-  const titleInput = document.getElementById('title')
-  const contentInput = document.getElementById('content')
-  const title = titleInput.value.trim()
-  const content = contentInput.value.trim()
-
-  if (!title || !content) {
-    alert('タイトルと本文は必須です。')
-    return
-  }
-
-  const post = posts.find((item) => item.id === id)
-  if (post) {
-    post.title = title
-    post.content = content
-    persistPosts()
-    location.hash = \`#/post/\${id}\`
-  }
-}
-
-function deletePost(id) {
-  if (confirm('本当に削除しますか？')) {
-    posts = posts.filter((item) => item.id !== id)
-    persistPosts()
-    location.hash = '#/'
-  }
-}
-
-// ハッシュリンクをそのまま遷移させると親ページを開いてしまうため、ここで抑止して手動でハッシュを書き換えます
-document.addEventListener('click', (event) => {
-  const anchor = event.target.closest('a[href^="#/"]')
-  if (!anchor) {
-    return
-  }
-
-  event.preventDefault()
-  const targetHash = anchor.getAttribute('href')
-  if (typeof targetHash === 'string') {
-    window.location.hash = targetHash
-  }
-})
-
-window.addEventListener('hashchange', router)
-window.addEventListener('load', () => {
-  router()
-})
 `;
 
 const defaultFiles = {
