@@ -378,18 +378,24 @@ const htmlEditor = document.getElementById('html-editor');
 const cssEditor = document.getElementById('css-editor');
 const jsEditor = document.getElementById('js-editor');
 const preview = document.getElementById('preview');
+const supportsSrcdoc = 'srcdoc' in preview;
+let previewBlobUrl = null;
 
 function loadFiles() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (!saved) {
-    return { ...defaultFiles };
-  }
-
   try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) {
+      return { ...defaultFiles };
+    }
     return { ...defaultFiles, ...JSON.parse(saved) };
   } catch (error) {
-    // 壊れたデータで起動できないと学習が止まってしまうため、例外時は初期コードに戻します
-    console.error('保存データの読み込みに失敗しました', error);
+    // 壊れたデータやブラウザ設定による失敗時は初期コードに戻します
+    console.warn('保存データの読み込みに失敗したため初期コードを使用します', error);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (removeError) {
+      console.debug('保存データのリセットに失敗しました', removeError);
+    }
     return { ...defaultFiles };
   }
 }
@@ -418,7 +424,28 @@ ${html}
 </body>
 </html>`;
 
-  preview.srcdoc = doc;
+  if (supportsSrcdoc) {
+    preview.srcdoc = doc;
+    return;
+  }
+
+  if (previewBlobUrl && typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
+    URL.revokeObjectURL(previewBlobUrl);
+    previewBlobUrl = null;
+  }
+
+  if (typeof Blob !== 'undefined' && typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+    try {
+      const blob = new Blob([doc], { type: 'text/html' });
+      previewBlobUrl = URL.createObjectURL(blob);
+      preview.src = previewBlobUrl;
+      return;
+    } catch (error) {
+      console.error('プレビューの生成に失敗しました', error);
+    }
+  }
+
+  preview.src = `data:text/html;charset=utf-8,${encodeURIComponent(doc)}`;
 }
 
 function saveFiles() {
@@ -427,7 +454,11 @@ function saveFiles() {
     css: cssEditor.value,
     js: jsEditor.value
   };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(files));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(files));
+  } catch (error) {
+    console.warn('変更内容を保存できませんでした', error);
+  }
 }
 
 function resetPreviewData() {
@@ -437,7 +468,11 @@ function resetPreviewData() {
   } catch (error) {
     console.warn('プレビューの保存データを初期化できませんでした', error);
   }
-  localStorage.removeItem(PREVIEW_DATA_KEY);
+  try {
+    localStorage.removeItem(PREVIEW_DATA_KEY);
+  } catch (error) {
+    console.debug('エディター側のプレビュー保存データを削除できませんでした', error);
+  }
 }
 
 function resetFiles(target = 'all') {
@@ -762,6 +797,13 @@ document.getElementById('reset-button').addEventListener('click', () => {
 });
 document.getElementById('download-button').addEventListener('click', () => {
   downloadProject();
+});
+
+window.addEventListener('beforeunload', () => {
+  if (previewBlobUrl && typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
+    URL.revokeObjectURL(previewBlobUrl);
+    previewBlobUrl = null;
+  }
 });
 
 updatePreview();
