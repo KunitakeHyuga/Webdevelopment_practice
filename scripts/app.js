@@ -698,32 +698,30 @@ function createZip(files) {
 }
 
 function downloadProject() {
-  const blob = new Blob(
-    [
-      `<!DOCTYPE html>
+  const htmlDocument = `<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<style>
-${cssEditor.value}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>Blog Playground Export</title>
 </head>
 <body>
 ${htmlEditor.value}
-<script>
-${jsEditor.value}
-<\/script>
+  <script src="script.js"></script>
 </body>
-</html>`
-    ],
-    { type: 'text/html' }
-  );
+</html>`;
 
-  const url = URL.createObjectURL(blob);
+  const zipBlob = createZip([
+    { name: 'index.html', content: htmlDocument },
+    { name: 'styles.css', content: cssEditor.value },
+    { name: 'script.js', content: jsEditor.value }
+  ]);
+
+  const url = URL.createObjectURL(zipBlob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'blog-playground.html';
+  a.download = 'blog-playground.zip';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
