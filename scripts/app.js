@@ -440,18 +440,261 @@ function resetPreviewData() {
   localStorage.removeItem(PREVIEW_DATA_KEY);
 }
 
-function resetFiles() {
-  if (!confirm('初期コードに戻しますか？保存されている変更は失われます。')) {
-    return;
+function resetFiles(target = 'all') {
+  const targetMap = {
+    all: ['html', 'css', 'js'],
+    html: ['html'],
+    css: ['css'],
+    js: ['js']
+  };
+  const labelMap = {
+    all: 'すべてのファイル',
+    html: 'HTML ファイル',
+    css: 'CSS ファイル',
+    js: 'JavaScript ファイル'
+  };
+
+  const targets = targetMap[target];
+  if (!targets) {
+    return false;
   }
 
-  files = { ...defaultFiles };
-  htmlEditor.value = files.html;
-  cssEditor.value = files.css;
-  jsEditor.value = files.js;
+  if (!confirm(`${labelMap[target]}を初期コードに戻しますか？保存されている変更は失われます。`)) {
+    return false;
+  }
+
+  targets.forEach((key) => {
+    const defaultValue = defaultFiles[key];
+    if (key === 'html') {
+      htmlEditor.value = defaultValue;
+    } else if (key === 'css') {
+      cssEditor.value = defaultValue;
+    } else if (key === 'js') {
+      jsEditor.value = defaultValue;
+    }
+  });
+
   saveFiles();
-  resetPreviewData();
+
+  if (target === 'all' || target === 'js') {
+    resetPreviewData();
+  }
+
   updatePreview();
+  return true;
+}
+
+const resetDialog = (() => {
+  let overlay = null;
+  let previousFocus = null;
+
+  function close() {
+    if (!overlay) {
+      return;
+    }
+    overlay.classList.remove('is-visible');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.removeEventListener('keydown', handleKeydown);
+    if (previousFocus) {
+      previousFocus.focus();
+      previousFocus = null;
+    }
+  }
+
+  function handleKeydown(event) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      close();
+    }
+  }
+
+  function attachEvents() {
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay) {
+        close();
+      }
+    });
+
+    overlay.querySelectorAll('[data-target]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const target = button.getAttribute('data-target');
+        const result = resetFiles(target);
+        if (result) {
+          close();
+        }
+      });
+    });
+
+    const cancelButton = overlay.querySelector('[data-action="cancel"]');
+    cancelButton.addEventListener('click', () => {
+      close();
+    });
+  }
+
+  function ensureDialog() {
+    if (overlay) {
+      return;
+    }
+
+    overlay = document.createElement('div');
+    overlay.className = 'reset-modal-overlay';
+    overlay.setAttribute('role', 'presentation');
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.innerHTML = `
+      <div class="reset-modal" role="dialog" aria-modal="true" aria-labelledby="reset-modal-title">
+        <h2 id="reset-modal-title">初期コードに戻す</h2>
+        <p>対象を選んでください。選択後に確認ダイアログが表示されます。</p>
+        <div class="reset-modal-buttons" role="group" aria-label="リセット対象の選択">
+          <button type="button" data-target="html">HTMLのみ</button>
+          <button type="button" data-target="css">CSSのみ</button>
+          <button type="button" data-target="js">JavaScriptのみ</button>
+          <button type="button" data-target="all" class="danger">すべて</button>
+        </div>
+        <button type="button" class="reset-modal-cancel" data-action="cancel">キャンセル</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    attachEvents();
+  }
+
+  function open() {
+    ensureDialog();
+    previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    overlay.classList.add('is-visible');
+    overlay.removeAttribute('aria-hidden');
+    const firstButton = overlay.querySelector('[data-target]');
+    if (firstButton) {
+      firstButton.focus();
+    }
+    document.addEventListener('keydown', handleKeydown);
+  }
+
+  return { open, close };
+})();
+
+const CRC32_TABLE = (() => {
+  const table = new Uint32Array(256);
+  for (let i = 0; i < 256; i += 1) {
+    let value = i;
+    for (let j = 0; j < 8; j += 1) {
+      if (value & 1) {
+        value = (value >>> 1) ^ 0xedb88320;
+      } else {
+        value >>>= 1;
+      }
+    }
+    table[i] = value >>> 0;
+  }
+  return table;
+})();
+
+function crc32(bytes) {
+  let crc = 0xffffffff;
+  for (let i = 0; i < bytes.length; i += 1) {
+    const byte = bytes[i];
+    const lookupIndex = (crc ^ byte) & 0xff;
+    crc = CRC32_TABLE[lookupIndex] ^ (crc >>> 8);
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function concatUint8Arrays(arrays) {
+  const totalLength = arrays.reduce((sum, arr) => sum + arr.length, 0);
+  const result = new Uint8Array(totalLength);
+  let offset = 0;
+  arrays.forEach((arr) => {
+    result.set(arr, offset);
+    offset += arr.length;
+  });
+  return result;
+}
+
+function getDosDateTime(date = new Date()) {
+  const year = Math.max(date.getFullYear(), 1980) - 1980;
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const seconds = Math.floor(date.getSeconds() / 2);
+
+  const dosTime = (hours << 11) | (minutes << 5) | seconds;
+  const dosDate = (year << 9) | (month << 5) | day;
+  return { dosTime, dosDate };
+}
+
+function createZip(files) {
+  const encoder = new TextEncoder();
+  const { dosTime, dosDate } = getDosDateTime();
+
+  const localParts = [];
+  const centralParts = [];
+  let localOffset = 0;
+
+  files.forEach((file) => {
+    const nameBytes = encoder.encode(file.name);
+    const dataBytes = encoder.encode(file.content);
+    const crc = crc32(dataBytes);
+    const size = dataBytes.length;
+
+    const localHeader = new Uint8Array(30);
+    const localView = new DataView(localHeader.buffer);
+    localView.setUint32(0, 0x04034b50, true);
+    localView.setUint16(4, 20, true);
+    localView.setUint16(6, 0, true);
+    localView.setUint16(8, 0, true);
+    localView.setUint16(10, dosTime, true);
+    localView.setUint16(12, dosDate, true);
+    localView.setUint32(14, crc, true);
+    localView.setUint32(18, size, true);
+    localView.setUint32(22, size, true);
+    localView.setUint16(26, nameBytes.length, true);
+    localView.setUint16(28, 0, true);
+
+    const localRecord = concatUint8Arrays([localHeader, nameBytes, dataBytes]);
+    localParts.push(localRecord);
+
+    const centralHeader = new Uint8Array(46);
+    const centralView = new DataView(centralHeader.buffer);
+    centralView.setUint32(0, 0x02014b50, true);
+    centralView.setUint16(4, 20, true);
+    centralView.setUint16(6, 20, true);
+    centralView.setUint16(8, 0, true);
+    centralView.setUint16(10, 0, true);
+    centralView.setUint16(12, dosTime, true);
+    centralView.setUint16(14, dosDate, true);
+    centralView.setUint32(16, crc, true);
+    centralView.setUint32(20, size, true);
+    centralView.setUint32(24, size, true);
+    centralView.setUint16(28, nameBytes.length, true);
+    centralView.setUint16(30, 0, true);
+    centralView.setUint16(32, 0, true);
+    centralView.setUint16(34, 0, true);
+    centralView.setUint16(36, 0, true);
+    centralView.setUint32(38, 0, true);
+    centralView.setUint32(42, localOffset, true);
+
+    const centralRecord = concatUint8Arrays([centralHeader, nameBytes]);
+    centralParts.push(centralRecord);
+
+    localOffset += localRecord.length;
+  });
+
+  const localData = concatUint8Arrays(localParts);
+  const centralData = concatUint8Arrays(centralParts);
+
+  const endRecord = new Uint8Array(22);
+  const endView = new DataView(endRecord.buffer);
+  endView.setUint32(0, 0x06054b50, true);
+  endView.setUint16(4, 0, true);
+  endView.setUint16(6, 0, true);
+  endView.setUint16(8, files.length, true);
+  endView.setUint16(10, files.length, true);
+  endView.setUint32(12, centralData.length, true);
+  endView.setUint32(16, localData.length, true);
+  endView.setUint16(20, 0, true);
+
+  const zipBytes = concatUint8Arrays([localData, centralData, endRecord]);
+  return new Blob([zipBytes], { type: 'application/zip' });
 }
 
 function downloadProject() {
@@ -517,7 +760,7 @@ jsEditor.addEventListener('input', () => {
   saveFiles();
 });
 document.getElementById('reset-button').addEventListener('click', () => {
-  resetFiles();
+  resetDialog.open();
 });
 document.getElementById('download-button').addEventListener('click', () => {
   downloadProject();
