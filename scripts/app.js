@@ -374,12 +374,146 @@ const defaultFiles = {
   js: defaultJs
 };
 
-const htmlEditor = document.getElementById('html-editor');
-const cssEditor = document.getElementById('css-editor');
-const jsEditor = document.getElementById('js-editor');
+const editorSurfaces = {
+  html: document.getElementById('html-editor'),
+  css: document.getElementById('css-editor'),
+  js: document.getElementById('js-editor')
+};
+const editors = {
+  html: null,
+  css: null,
+  js: null
+};
 const preview = document.getElementById('preview');
 const supportsSrcdoc = 'srcdoc' in preview;
 let previewBlobUrl = null;
+const MONACO_BASE_URL = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min';
+let editorMode = 'pending';
+
+function handleEditorChange(type) {
+  const adapter = editors[type];
+  if (!adapter) {
+    return;
+  }
+  files[type] = adapter.getValue();
+  updatePreview();
+  saveFiles();
+}
+
+function createMonacoAdapter(type, initialValue) {
+  const surface = editorSurfaces[type];
+  surface.innerHTML = '';
+
+  const baseOptions = {
+    value: initialValue,
+    theme: 'vs-dark',
+    automaticLayout: false,
+    minimap: { enabled: false },
+    fontSize: 13,
+    scrollBeyondLastLine: false,
+    renderWhitespace: 'none',
+    wordWrap: 'on',
+    tabSize: 2,
+    insertSpaces: true,
+    readOnly: false,
+    padding: { top: 16, bottom: 16 }
+  };
+
+  const languageMap = {
+    html: 'html',
+    css: 'css',
+    js: 'javascript'
+  };
+
+  const editor = monaco.editor.create(surface, {
+    ...baseOptions,
+    language: languageMap[type]
+  });
+
+  editor.onDidChangeModelContent(() => {
+    handleEditorChange(type);
+  });
+
+  return {
+    getValue: () => editor.getValue(),
+    setValue: (value) => {
+      if (editor.getValue() !== value) {
+        editor.setValue(value);
+      }
+    },
+    focus: () => editor.focus(),
+    layout: () => editor.layout()
+  };
+}
+
+function createFallbackAdapter(type, initialValue) {
+  const surface = editorSurfaces[type];
+  surface.innerHTML = '';
+  const textarea = document.createElement('textarea');
+  textarea.className = 'fallback-textarea';
+  textarea.value = initialValue;
+  surface.appendChild(textarea);
+  textarea.addEventListener('input', () => {
+    handleEditorChange(type);
+  });
+  return {
+    getValue: () => textarea.value,
+    setValue: (value) => {
+      if (textarea.value !== value) {
+        textarea.value = value;
+      }
+    },
+    focus: () => textarea.focus(),
+    layout: () => {}
+  };
+}
+
+function setEditorValue(type, value) {
+  files[type] = value;
+  const adapter = editors[type];
+  if (adapter) {
+    adapter.setValue(value);
+  }
+}
+
+function initializeEditors() {
+  if (typeof window.require === 'function') {
+    window.MonacoEnvironment = {
+      getWorkerUrl() {
+        return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
+          self.MonacoEnvironment = { baseUrl: '${MONACO_BASE_URL}/' };
+          importScripts('${MONACO_BASE_URL}/vs/base/worker/workerMain.js');
+        `)}`;
+      }
+    };
+    window.require.config({ paths: { vs: `${MONACO_BASE_URL}/vs` } });
+    window.require(['vs/editor/editor.main'], () => {
+      editorMode = 'monaco';
+      ['html', 'css', 'js'].forEach((type) => {
+        editors[type] = createMonacoAdapter(type, files[type]);
+        if (editorSurfaces[type]?.classList.contains('active')) {
+          window.requestAnimationFrame(() => {
+            editors[type]?.layout?.();
+          });
+        }
+      });
+      updatePreview();
+    }, (error) => {
+      console.warn('Monaco エディターの読み込みに失敗したためテキストエリアに切り替えます', error);
+      initializeFallbackEditors();
+    });
+    return;
+  }
+  initializeFallbackEditors();
+}
+
+function initializeFallbackEditors() {
+  editorMode = 'fallback';
+  ['html', 'css', 'js'].forEach((type) => {
+    editors[type] = createFallbackAdapter(type, files[type]);
+  });
+  updatePreview();
+}
 
 function loadFiles() {
   try {
@@ -402,14 +536,12 @@ function loadFiles() {
 
 let files = loadFiles();
 
-htmlEditor.value = files.html;
-cssEditor.value = files.css;
-jsEditor.value = files.js;
+initializeEditors();
 
 function updatePreview() {
-  const html = htmlEditor.value;
-  const css = cssEditor.value;
-  const js = jsEditor.value;
+  const html = files.html;
+  const css = files.css;
+  const js = files.js;
 
   const doc = `<!DOCTYPE html>
 <html lang="ja">
@@ -449,11 +581,6 @@ ${html}
 }
 
 function saveFiles() {
-  files = {
-    html: htmlEditor.value,
-    css: cssEditor.value,
-    js: jsEditor.value
-  };
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(files));
   } catch (error) {
@@ -500,21 +627,14 @@ function resetFiles(target = 'all') {
 
   targets.forEach((key) => {
     const defaultValue = defaultFiles[key];
-    if (key === 'html') {
-      htmlEditor.value = defaultValue;
-    } else if (key === 'css') {
-      cssEditor.value = defaultValue;
-    } else if (key === 'js') {
-      jsEditor.value = defaultValue;
-    }
+    setEditorValue(key, defaultValue);
   });
-
-  saveFiles();
 
   if (target === 'all' || target === 'js') {
     resetPreviewData();
   }
 
+  saveFiles();
   updatePreview();
   return true;
 }
@@ -742,15 +862,15 @@ function downloadProject() {
   <title>Blog Playground Export</title>
 </head>
 <body>
-${htmlEditor.value}
+${files.html}
   <script src="script.js"></script>
 </body>
 </html>`;
 
   const zipBlob = createZip([
     { name: 'index.html', content: htmlDocument },
-    { name: 'styles.css', content: cssEditor.value },
-    { name: 'script.js', content: jsEditor.value }
+    { name: 'styles.css', content: files.css },
+    { name: 'script.js', content: files.js }
   ]);
 
   const url = URL.createObjectURL(zipBlob);
@@ -765,33 +885,33 @@ ${htmlEditor.value}
 
 document.querySelectorAll('.editor-tab').forEach((tab) => {
   tab.addEventListener('click', () => {
+    const targetKey = tab.dataset.tab;
+    if (!targetKey) {
+      return;
+    }
     document.querySelectorAll('.editor-tab').forEach((item) => {
       item.classList.remove('active');
       item.setAttribute('aria-selected', 'false');
     });
-    document.querySelectorAll('textarea').forEach((area) => {
-      area.classList.remove('active');
+    document.querySelectorAll('.editor-surface').forEach((surface) => {
+      surface.classList.remove('active');
     });
     tab.classList.add('active');
     tab.setAttribute('aria-selected', 'true');
-    const target = document.getElementById(`${tab.dataset.tab}-editor`);
-    target.classList.add('active');
-    target.focus();
+    const targetSurface = editorSurfaces[targetKey];
+    if (targetSurface) {
+      targetSurface.classList.add('active');
+    }
+    const adapter = editors[targetKey];
+    if (adapter) {
+      window.requestAnimationFrame(() => {
+        adapter.layout?.();
+        adapter.focus?.();
+      });
+    }
   });
 });
 
-htmlEditor.addEventListener('input', () => {
-  updatePreview();
-  saveFiles();
-});
-cssEditor.addEventListener('input', () => {
-  updatePreview();
-  saveFiles();
-});
-jsEditor.addEventListener('input', () => {
-  updatePreview();
-  saveFiles();
-});
 document.getElementById('reset-button').addEventListener('click', () => {
   resetDialog.open();
 });

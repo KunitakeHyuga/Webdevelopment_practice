@@ -310,7 +310,7 @@ iframe {
   font-weight: 600;
 }
 
-textarea {
+.editor-surface {
   flex: 1;
   width: 100%;
   border: none;
@@ -323,26 +323,63 @@ textarea {
   resize: none;
   outline: none;
   display: none;
-  overflow: auto;
+  overflow: hidden;
+  height: 100%;
+  border-radius: 0 0 12px 12px;
 }
 
-textarea.active {
+.editor-surface.active {
   display: block;
 }
 
-textarea::placeholder {
-  color: #6b7280;
+.editor-wrapper {
+  position: relative;
 }
 
-textarea::-webkit-scrollbar {
+.editor-surface {
+  position: relative;
+  padding: 0;
+}
+
+.editor-surface .monaco-editor,
+.editor-surface .monaco-editor-background,
+.editor-surface .monaco-editor .margin {
+  background-color: transparent !important;
+}
+
+.editor-surface .monaco-editor {
+  padding-top: 0;
+}
+
+.editor-surface .monaco-editor .scrollbar.vertical {
+  width: 12px !important;
+}
+
+.fallback-textarea {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: inherit;
+  color: inherit;
+  font-family: "Fira Code", "Consolas", "Monaco", monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  padding: 20px;
+  resize: none;
+  outline: none;
+  display: block;
+  overflow: auto;
+}
+
+.fallback-textarea::-webkit-scrollbar {
   width: 12px;
 }
 
-textarea::-webkit-scrollbar-track {
+.fallback-textarea::-webkit-scrollbar-track {
   background: #111827;
 }
 
-textarea::-webkit-scrollbar-thumb {
+.fallback-textarea::-webkit-scrollbar-thumb {
   background: #374151;
   border-radius: 6px;
 }

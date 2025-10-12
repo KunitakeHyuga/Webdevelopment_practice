@@ -73,14 +73,15 @@
                 <span class="tab-name">JavaScript</span>
               </button>
             </nav>
-            <textarea id="html-editor" class="active highlight-html" spellcheck="false" aria-label="HTMLエディター"></textarea>
-            <textarea id="css-editor" class="highlight-css" spellcheck="false" aria-label="CSSエディター"></textarea>
-            <textarea id="js-editor" class="highlight-js" spellcheck="false" aria-label="JavaScriptエディター"></textarea>
+            <div id="html-editor" class="editor-surface active highlight-html" role="textbox" aria-label="HTMLエディター"></div>
+            <div id="css-editor" class="editor-surface highlight-css" role="textbox" aria-label="CSSエディター"></div>
+            <div id="js-editor" class="editor-surface highlight-js" role="textbox" aria-label="JavaScriptエディター"></div>
           </div>
         </article>
       </section>
     </main>
     <footer>© 2025 Blog Dev Playground</footer>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.min.js" defer></script>
     <script src="scripts/app.js" defer></script>
   </body>
 </html>
