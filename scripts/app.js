@@ -1,12 +1,15 @@
 const STORAGE_KEY = 'blog-dev-playground-files';
 const PREVIEW_DATA_KEY = 'playground-posts';
 
-const defaultHtml = String.raw`<header>
+const defaultHtml = String.raw`<!-- サイト全体の見出し -->
+<header>
   <h1>My Mini Blog</h1>
 </header>
 
+<!-- 投稿一覧を表示する領域（JavaScript で中身を差し込む） -->
 <main id="posts"></main>
 
+<!-- 新しい記事を作成するフォーム -->
 <section id="create">
   <h2>新しい記事を作成</h2>
   <input id="title" placeholder="タイトル" />
@@ -14,7 +17,8 @@ const defaultHtml = String.raw`<header>
   <button id="add" type="button">投稿</button>
 </section>`;
 
-const defaultCss = String.raw`body {
+const defaultCss = String.raw`/* ページ全体の基本スタイル */
+body {
   font-family: sans-serif;
   background: #f5f5f5;
   margin: 0;
@@ -22,12 +26,14 @@ const defaultCss = String.raw`body {
   line-height: 1.6;
 }
 
+/* すべての要素の余白と箱サイズをリセット */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
+/* サイト上部のヘッダー見た目 */
 header {
   background: #333;
   color: white;
@@ -36,6 +42,7 @@ header {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* メインコンテンツ全体のレイアウト */
 main {
   max-width: 960px;
   margin: 0 auto;
@@ -44,11 +51,13 @@ main {
   gap: 2rem;
 }
 
+/* 投稿カードを縦方向に並べる設定 */
 #posts {
   display: grid;
   gap: 1.25rem;
 }
 
+/* 投稿がないときの案内パネル */
 .empty-state {
   background: white;
   border-radius: 12px;
@@ -59,6 +68,7 @@ main {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
 }
 
+/* 個々の投稿カードの見た目 */
 .post {
   background: white;
   padding: 1.25rem 1.5rem;
@@ -67,40 +77,48 @@ main {
   border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
+/* 投稿タイトル */
 .post h3 {
   margin: 0 0 0.5rem;
   font-size: 1.1rem;
 }
 
+/* 投稿本文 */
 .post p {
   margin: 0 0 1rem;
   color: #555;
 }
 
+/* 投稿カード下部のボタン配置 */
 .post-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
 }
 
+/* 編集モードの投稿を強調表示 */
 .post.editing {
   border-color: rgba(0, 123, 255, 0.45);
   box-shadow: 0 20px 36px rgba(0, 123, 255, 0.18);
   background: linear-gradient(135deg, rgba(0, 123, 255, 0.08), #ffffff);
 }
 
+/* 編集フォーム全体の配置 */
 .post-edit-form {
   display: grid;
   gap: 0.75rem;
 }
 
+/* ラベルの見た目を少し強調 */
 .post-edit-label {
   font-size: 0.95rem;
   font-weight: 600;
   color: #1f2937;
 }
 
+/* 編集フォームの入力欄 */
 .post-edit-input,
+/* 本文入力欄は高さを確保 */
 .post-edit-textarea {
   width: 100%;
   padding: 0.75rem 1rem;
@@ -116,6 +134,7 @@ main {
   resize: vertical;
 }
 
+/* 入力欄にフォーカスしたときの強調 */
 .post-edit-input:focus,
 .post-edit-textarea:focus {
   outline: none;
@@ -124,6 +143,7 @@ main {
   box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15);
 }
 
+/* 新規投稿フォーム全体の飾り */
 #create {
   background: white;
   padding: 1.75rem 1.5rem 1.5rem;
@@ -136,12 +156,15 @@ main {
   margin: 0 auto 3rem;
 }
 
+/* フォーム内の見出し */
 #create h2 {
   margin: 0;
   font-size: 1.4rem;
 }
 
+/* 入力欄を横幅いっぱいにする */
 #create input,
+/* 本文入力欄はある程度の高さからスタート */
 #create textarea {
   width: 100%;
   padding: 0.75rem 1rem;
@@ -165,6 +188,7 @@ main {
   box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15);
 }
 
+/* 基本のボタン装飾 */
 button {
   background: #007bff;
   color: white;
@@ -177,12 +201,14 @@ button {
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
+/* ボタンにカーソルを合わせたときの演出 */
 button:hover {
   transform: translateY(-1px);
   background: #0065d6;
   box-shadow: 0 10px 24px rgba(0, 101, 214, 0.25);
 }
 
+/* サブボタン（編集キャンセルなど）の配色 */
 button.secondary {
   background: white;
   color: #0f49a1;
@@ -190,22 +216,27 @@ button.secondary {
   box-shadow: none;
 }
 
+/* サブボタンのホバー時 */
 button.secondary:hover {
   background: rgba(15, 73, 161, 0.08);
 }
 
+/* 削除用の危険ボタン */
 button.danger {
   background: #ef4444;
   box-shadow: 0 10px 24px rgba(239, 68, 68, 0.25);
 }
 
+/* 危険ボタンのホバー時 */
 button.danger:hover {
   background: #dc2626;
   box-shadow: 0 12px 28px rgba(220, 38, 38, 0.28);
 }`;
 
-const defaultJs = `const STORAGE_KEY_POSTS = "posts";
+const defaultJs = `// 投稿データを保存しておくローカルストレージのキー
+const STORAGE_KEY_POSTS = "posts";
 
+// 保存済みの投稿一覧を読み込む
 function loadPosts() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY_POSTS);
@@ -217,10 +248,12 @@ function loadPosts() {
   }
 }
 
+// 投稿一覧をローカルストレージに保存する
 function savePosts(data) {
   localStorage.setItem(STORAGE_KEY_POSTS, JSON.stringify(data));
 }
 
+// 危険な文字を無害化する（XSS対策）
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -238,14 +271,18 @@ const contentInput = document.getElementById("content");
 if (!postsContainer || !addButton || !titleInput || !contentInput) {
   console.error("必要な要素が見つかりませんでした。");
 } else {
+  // 投稿一覧の実データを管理する変数
   let posts = loadPosts();
+  // どの投稿を編集中かを表す番号（なければnull）
   let editingIndex = null;
 
+  // フォームの入力欄を空に戻す
   function resetForm() {
     titleInput.value = "";
     contentInput.value = "";
   }
 
+  // 表示用の投稿カードHTMLを組み立てる
   function createPostView(post, index) {
     const safeTitle = escapeHtml(post.title || "");
     const safeContent = escapeHtml(post.content || "").replace(/\\n/g, "<br>");
@@ -259,6 +296,7 @@ if (!postsContainer || !addButton || !titleInput || !contentInput) {
       '</article>';
   }
 
+  // 編集モードの投稿カードHTMLを組み立てる
   function createEditView(post, index) {
     const safeTitle = escapeHtml(post.title || "");
     const safeContent = escapeHtml(post.content || "");
@@ -277,6 +315,7 @@ if (!postsContainer || !addButton || !titleInput || !contentInput) {
       '</article>';
   }
 
+  // 投稿一覧全体を再描画する
   function renderPosts() {
     if (!posts.length) {
       postsContainer.innerHTML = '<div class="empty-state">投稿はまだありません。最初の記事を作成しましょう。</div>';
@@ -290,6 +329,7 @@ if (!postsContainer || !addButton || !titleInput || !contentInput) {
       .join("");
   }
 
+  // 投稿ボタンを押したときの処理
   function handleSubmit() {
     const title = titleInput.value.trim();
     const content = contentInput.value.trim();
@@ -305,6 +345,7 @@ if (!postsContainer || !addButton || !titleInput || !contentInput) {
     resetForm();
   }
 
+  // 編集ボタンを押したときの処理
   function startEdit(index) {
     editingIndex = index;
     renderPosts();
@@ -314,11 +355,13 @@ if (!postsContainer || !addButton || !titleInput || !contentInput) {
     }
   }
 
+  // 編集をキャンセルして通常表示に戻す
   function cancelEdit() {
     editingIndex = null;
     renderPosts();
   }
 
+  // 編集内容を保存する
   function saveEdit(index) {
     const titleField = document.getElementById('edit-title-' + index);
     const contentField = document.getElementById('edit-content-' + index);
@@ -341,6 +384,7 @@ if (!postsContainer || !addButton || !titleInput || !contentInput) {
     renderPosts();
   }
 
+  // 投稿を削除する
   function deletePost(index) {
     if (!confirm("この記事を削除しますか？")) {
       return;
@@ -357,9 +401,11 @@ if (!postsContainer || !addButton || !titleInput || !contentInput) {
     renderPosts();
   }
 
+  // 初期状態でフォームを空にし、画面を描画
   resetForm();
   renderPosts();
 
+  // ボタンからこれらの関数を呼べるようにグローバル公開
   window.handleSubmit = handleSubmit;
   window.startEdit = startEdit;
   window.cancelEdit = cancelEdit;
