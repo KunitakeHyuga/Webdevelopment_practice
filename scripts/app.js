@@ -506,15 +506,14 @@ document.querySelectorAll('.editor-tab').forEach((tab) => {
 
 htmlEditor.addEventListener('input', () => {
   updatePreview();
+  saveFiles();
 });
 cssEditor.addEventListener('input', () => {
   updatePreview();
+  saveFiles();
 });
 jsEditor.addEventListener('input', () => {
   updatePreview();
-});
-
-document.getElementById('save-button').addEventListener('click', () => {
   saveFiles();
 });
 document.getElementById('reset-button').addEventListener('click', () => {
