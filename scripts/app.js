@@ -330,8 +330,8 @@ if (!postsContainer || !addButton || !titleInput || !contentInput) {
     if (!confirm("この記事を削除しますか？")) {
       return;
     }
-    posts.splice(index, 1);
-    savePosts(posts);
+
+
 
     if (editingIndex === index) {
       editingIndex = null;
@@ -339,7 +339,7 @@ if (!postsContainer || !addButton || !titleInput || !contentInput) {
       editingIndex -= 1;
     }
 
-    renderPosts();
+
   }
 
   // 初期状態でフォームを空にし、画面を描画
