@@ -189,11 +189,11 @@ main {
 
 /* 基本のボタン装飾 */
 button {
-  background: #007bff;
-  color: white;
+
+
   border: none;
   padding: 0.7rem 1.25rem;
-  border-radius: 999px;
+
   cursor: pointer;
   font-weight: 600;
   letter-spacing: 0.01em;
