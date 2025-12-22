@@ -14,7 +14,6 @@ const defaultHtml = String.raw`<!-- サイト全体の見出し -->
   <h2>新しい記事を作成</h2>
   <input id="title" placeholder="タイトル" />
   <textarea id="content" placeholder="内容"></textarea>
-  <button id="add" type="button">投稿</button>
 </section>`;
 
 const defaultCss = String.raw`/* ページ全体の基本スタイル */
