@@ -290,27 +290,7 @@ if (!postsContainer || !addButton || !titleInput || !contentInput) {
       '<h3>' + safeTitle + '</h3>' +
       '<p>' + safeContent + '</p>' +
       '<div class="post-actions">' +
-      '<button type="button" class="secondary" onclick="startEdit(' + index + ')">編集</button>' +
       '<button type="button" class="danger" onclick="deletePost(' + index + ')">削除</button>' +
-      '</div>' +
-      '</article>';
-  }
-
-  // 編集モードの投稿カードHTMLを組み立てる
-  function createEditView(post, index) {
-    const safeTitle = escapeHtml(post.title || "");
-    const safeContent = escapeHtml(post.content || "");
-    return '<article class="post editing">' +
-      '<div class="post-edit-form">' +
-      '<label class="post-edit-label" for="edit-title-' + index + '">タイトル</label>' +
-      '<input id="edit-title-' + index + '" class="post-edit-input" value="' + safeTitle + '">' +
-      '<label class="post-edit-label" for="edit-content-' + index + '">内容</label>' +
-      '<textarea id="edit-content-' + index + '" class="post-edit-textarea">' + safeContent + '</textarea>' +
-      '<div class="post-actions">' +
-      '<button type="button" onclick="saveEdit(' + index + ')">保存</button>' +
-      '<button type="button" class="secondary" onclick="cancelEdit()">キャンセル</button>' +
-      '<button type="button" class="danger" onclick="deletePost(' + index + ')">削除</button>' +
-      '</div>' +
       '</div>' +
       '</article>';
   }
@@ -345,44 +325,6 @@ if (!postsContainer || !addButton || !titleInput || !contentInput) {
     resetForm();
   }
 
-  // 編集ボタンを押したときの処理
-  function startEdit(index) {
-    editingIndex = index;
-    renderPosts();
-    const titleField = document.getElementById('edit-title-' + index);
-    if (titleField) {
-      titleField.focus();
-    }
-  }
-
-  // 編集をキャンセルして通常表示に戻す
-  function cancelEdit() {
-    editingIndex = null;
-    renderPosts();
-  }
-
-  // 編集内容を保存する
-  function saveEdit(index) {
-    const titleField = document.getElementById('edit-title-' + index);
-    const contentField = document.getElementById('edit-content-' + index);
-
-    if (!titleField || !contentField) {
-      return;
-    }
-
-    const title = titleField.value.trim();
-    const content = contentField.value.trim();
-
-    if (!title || !content) {
-      alert("タイトルと内容を入力してください");
-      return;
-    }
-
-    posts[index] = { title: title, content: content };
-    savePosts(posts);
-    editingIndex = null;
-    renderPosts();
-  }
 
   // 投稿を削除する
   function deletePost(index) {
@@ -404,12 +346,10 @@ if (!postsContainer || !addButton || !titleInput || !contentInput) {
   // 初期状態でフォームを空にし、画面を描画
   resetForm();
   renderPosts();
+  addButton.addEventListener("click", handleSubmit);
 
   // ボタンからこれらの関数を呼べるようにグローバル公開
   window.handleSubmit = handleSubmit;
-  window.startEdit = startEdit;
-  window.cancelEdit = cancelEdit;
-  window.saveEdit = saveEdit;
   window.deletePost = deletePost;
 }
 `;
