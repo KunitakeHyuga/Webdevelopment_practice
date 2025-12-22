@@ -300,7 +300,6 @@ iframe {
   border-radius: 8px 8px 0 0;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
 }
 
 .editor-tab:hover {
@@ -312,19 +311,6 @@ iframe {
   color: #f9fafb;
   border-color: #38bdf8;
   background: rgba(59, 130, 246, 0.18);
-}
-
-.editor-tab .tab-step {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px 8px;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 999px;
-  background: rgba(59, 130, 246, 0.25);
-  color: #bfdbfe;
-  letter-spacing: 0.02em;
 }
 
 .editor-tab .tab-name {
