@@ -53,11 +53,11 @@
         <input type="text" id="inputTitle" name="title" placeholder="記事のタイトル" size="30">
         <br><br>
 
-        <button type="submit" class="btn-bug" onclick="handleAddBug()">
+        <button type="submit" class="btn-bug" onclick="handleAdd()">
             【バグる】<br>(type="submit")
         </button>
 
-        <button type="button" class="btn-ok" onclick="handleAddCorrect()">
+        <button type="button" class="btn-ok" onclick="handleAdd()">
             【おすすめ】<br>(type="button")
         </button>
     </form>
@@ -72,18 +72,9 @@
         const timeString = now.getHours() + "時" + now.getMinutes() + "分" + now.getSeconds() + "秒" + now.getMilliseconds();
         document.getElementById("loadTime").innerText = timeString;
 
-        // 【バグ発生パターン】の処理
-        function handleAddBug() {
-            addList("（バグ発生ボタンによる追加）");
-            
-            // 重要：ここで処理を一時停止させます。
-            // これがないと一瞬でリロードされてしまい、追加されたことすら目視できません。
-        }
-
-        // 【正解パターン】の処理
-        function handleAddCorrect() {
-            addList("（正解ボタンによる追加）");
-            // こちらはtype="button"なので、何もしなくてもリロードされません。
+        // どちらのボタンでも同じ処理
+        function handleAdd() {
+            addList("");
         }
 
         // 共通：画面にリストを追加する関数
