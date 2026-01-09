@@ -53,11 +53,11 @@
         <input type="text" id="inputTitle" name="title" placeholder="記事のタイトル" size="30">
         <br><br>
 
-        <button type="submit" class="btn-bug" onclick="handleAdd()">
+        <button type="submit" class="btn-bug" onclick="handleSubmit()">
             【バグる】<br>(type="submit")
         </button>
 
-        <button type="button" class="btn-ok" onclick="handleAdd()">
+        <button type="button" class="btn-ok" onclick="handleSubmit()">
             【おすすめ】<br>(type="button")
         </button>
     </form>
@@ -73,7 +73,7 @@
         document.getElementById("loadTime").innerText = timeString;
 
         // どちらのボタンでも同じ処理
-        function handleAdd() {
+        function handleSubmit() {
             addList("");
         }
 
