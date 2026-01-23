@@ -373,10 +373,7 @@ if (!postsContainer || !addButton || !titleInput || !contentInput) {
     const title = titleField.value.trim();
     const content = contentField.value.trim();
 
-    if (!title || !content) {
-      alert("タイトルと内容を入力してください");
-      return;
-    }
+
 
     posts[index] = { title: title, content: content };
     savePosts(posts);
